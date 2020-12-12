@@ -5,9 +5,9 @@ from jose import jwt
 from urllib.request import urlopen
 
 
-AUTH0_DOMAIN = 'udacity-fsnd.auth0.com'
+AUTH0_DOMAIN = 'coffeeshopbo.us.auth0.com'
 ALGORITHMS = ['RS256']
-API_AUDIENCE = 'dev'
+API_AUDIENCE = 'drink'
 
 ## AuthError Exception
 '''
@@ -21,17 +21,37 @@ class AuthError(Exception):
 
 
 ## Auth Header
-
-'''
-@TODO implement get_token_auth_header() method
-    it should attempt to get the header from the request
-        it should raise an AuthError if no header is present
-    it should attempt to split bearer and the token
-        it should raise an AuthError if the header is malformed
-    return the token part of the header
-'''
 def get_token_auth_header():
-   raise Exception('Not Implemented')
+    auth = request.headers.get('Authorization',None)
+    if not auth:
+        print('not Auth')
+        raise AuthError({
+            'code':'authorization_header_missing',
+            'description': 'Auhtorization header is expected'
+        },401)
+        
+    parts = auth.split()
+    
+    if parts[0].lower() != 'bearer':
+        print('!=bearer')
+        raise AuthError({
+            'code':'Invalid_header',
+            'description':'Authorization header must start with "Bearer".'
+        },401)
+    elif len(parts) == 1:
+        print('==1')
+        raise AuthError({
+            'code': 'invalid_header',
+            'description': 'Token not found'
+        },401)
+    elif len(parts) > 2:
+        print('>2')
+        raise AuthError({
+            'code':'Invalid_header',
+            'description': 'It must be a bearer token'
+        },401) 
+    token = parts[1]
+    return token
 
 '''
 @TODO implement check_permissions(permission, payload) method
