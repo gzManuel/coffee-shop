@@ -12,6 +12,7 @@ log.txt
 .vscode/
 npm-debug.log*
 
+**/__pycache__
 .idea/
 .ionic/
 .sourcemaps/

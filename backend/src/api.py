@@ -38,7 +38,17 @@ def get_drinks():
     returns status code 200 and json {"success": True, "drinks": drinks} where drinks is the list of drinks
         or appropriate status code indicating reason for failure
 '''
+@app.route('/drinks-detail')
+@requires_auth('get:drinks-detail')
+def get_drinks_detail(jwt):
+    drinks = Drink.query.all()
+    # If there's not drinks, abort(404).
+    if len(drinks) == 0:
+        abort(404)  # Not found.
+    # Using list comprehension to get a list of drinks long model representation.
+    list_of_drinks = [drink.long() for drink in drinks]
 
+    return jsonify({'success': True, 'drinks': list_of_drinks}), 200
 
 '''
 @TODO implement endpoint
@@ -49,7 +59,24 @@ def get_drinks():
     returns status code 200 and json {"success": True, "drinks": drink} where drink an array containing only the newly created drink
         or appropriate status code indicating reason for failure
 '''
+@app.route('/drinks', methods=["POST"])
+@requires_auth('post:drinks')
+def add_drink(jwt):
+    title = request.json.get('title')
+    recipe = request.json.get('recipe')
 
+    # If the client don't send a title or a recipe data, then abort(400).
+    if title is None or recipe is None:
+        abort(400)  # Bad request.
+    try:
+        drink = Drink()
+        drink.title = title
+        # Formatting recipe, changing ' by " to avoid a bug with json.load().
+        drink.recipe = str(recipe).replace("\'", "\"")
+        drink.insert()
+        return jsonify({"success": True, "drinks": drink.long()}), 200
+    except:
+        abort(422)  # Unprocessable entity.
 
 '''
 @TODO implement endpoint
