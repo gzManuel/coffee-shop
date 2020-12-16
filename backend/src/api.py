@@ -89,7 +89,32 @@ def add_drink(jwt):
     returns status code 200 and json {"success": True, "drinks": drink} where drink an array containing only the updated drink
         or appropriate status code indicating reason for failure
 '''
+@app.route('/drinks/<int:id>', methods=["PATCH"])
+@requires_auth('patch:drinks')
+def update_drink(jwt, id):
+    try:
+        drink = Drink.query.filter_by(id=id).one_or_none()
+        # If the id recieved is not in the database, abort(404).
+        if drink is None:
+            abort(404)
+        title = request.json.get('title')
+        recipe = request.json.get('recipe')
 
+        # If the client don't send any data to change the drink, abort(400).
+        if title is None and recipe is None:
+            abort(400)  # Bad request.
+        # If title is not None we can change title with new title.
+        if title is not None:
+            drink.title = title
+        # If recipe is not None we can change recipe with new recipe.
+        if recipe is not None:
+            # Formatting recipe, changing ' for " to avoid a bug
+            # with json.load().
+            drink.recipe = str(recipe).replace("\'", "\"")
+        drink.update()
+        return jsonify({"success": True, "drinks": drink.long()}), 200
+    except:
+        abort(422)  # Unprocessable entity.
 
 '''
 @TODO implement endpoint
@@ -101,7 +126,18 @@ def add_drink(jwt):
     returns status code 200 and json {"success": True, "delete": id} where id is the id of the deleted record
         or appropriate status code indicating reason for failure
 '''
-
+@app.route('/drinks/<int:id>', methods=["DELETE"])
+@requires_auth('delete:drinks')
+def delete_drink(jwt, id):
+    drink = Drink.query.filter_by(id=id).one_or_none()
+    # If the id recieved is not in the database, abort(404).
+    if drink is None:
+        abort(404)
+    try:
+        drink.delete()
+        return jsonify({"success": True, "delete": id})
+    except:
+        abort(422)  # Unprocessable entity.
 
 ## Error Handling
 '''
