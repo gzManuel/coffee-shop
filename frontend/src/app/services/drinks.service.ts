@@ -119,7 +119,7 @@ export class DrinksService {
       this.http.post(this.url + '/drinks', drink, this.getHeaders())
       .subscribe( (res: any) => {
         if (res.success) {
-          this.drinksToItems(res.drinks);
+          this.items[res.drinks.id] = res.drinks
         }
       });
     }
