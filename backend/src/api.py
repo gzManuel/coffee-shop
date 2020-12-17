@@ -18,15 +18,18 @@ CORS(app)
 
 # ROUTES
 
+
 @app.route('/drinks')
 def get_drinks():
     drinks = Drink.query.all()
     # If there's not drinks, abort(404).
     if len(drinks) == 0:
         abort(404)  # Not found.
-    # Using list comprehension to get a list of drinks short model representation.
+    # Using list comprehension to get a list of drinks short model
+    # representation.
     list_of_drinks = [drink.short() for drink in drinks]
     return jsonify({'success': True, 'drinks': list_of_drinks}), 200
+
 
 @app.route('/drinks-detail')
 @requires_auth('get:drinks-detail')
@@ -35,10 +38,12 @@ def get_drinks_detail(jwt):
     # If there's not drinks, abort(404).
     if len(drinks) == 0:
         abort(404)  # Not found.
-    # Using list comprehension to get a list of drinks long model representation.
+    # Using list comprehension to get a list of drinks long model
+    # representation.
     list_of_drinks = [drink.long() for drink in drinks]
 
     return jsonify({'success': True, 'drinks': list_of_drinks}), 200
+
 
 @app.route('/drinks', methods=["POST"])
 @requires_auth('post:drinks')
@@ -56,7 +61,7 @@ def add_drink(jwt):
         drink.recipe = str(recipe).replace("\'", "\"")
         drink.insert()
         return jsonify({"success": True, "drinks": drink.long()}), 200
-    except:
+    except exc.DataError:
         abort(422)  # Unprocessable entity.
 
 @app.route('/drinks/<int:id>', methods=["PATCH"])
@@ -83,8 +88,9 @@ def update_drink(jwt, id):
             drink.recipe = str(recipe).replace("\'", "\"")
         drink.update()
         return jsonify({"success": True, "drinks": drink.long()}), 200
-    except:
+    except exc.DataError:
         abort(422)  # Unprocessable entity.
+
 
 @app.route('/drinks/<int:id>', methods=["DELETE"])
 @requires_auth('delete:drinks')
@@ -93,21 +99,20 @@ def delete_drink(jwt, id):
     # If the id recieved is not in the database, abort(404).
     if drink is None:
         abort(404)
-    try:
-        drink.delete()
-        return jsonify({"success": True, "delete": id})
-    except:
-        abort(422)  # Unprocessable entity.
+    drink.delete()
+    return jsonify({"success": True, "delete": id})
 
-## Error Handling
+# Error Handling
+
 
 @app.errorhandler(422)
 def unprocessable(error):
     return jsonify({
-                    "success": False, 
+                    "success": False,
                     "error": 422,
                     "message": "unprocessable"
                     }), 422
+
 
 @app.errorhandler(404)
 def notfound(error):
@@ -117,11 +122,13 @@ def notfound(error):
                     "message": "resource not found"
                     }), 404
 
+
 @app.errorhandler(AuthError)
 def handle_auth_error(ex):
     response = jsonify(ex.error)
     response.status_code = ex.status_code
     return response
+
 
 @app.errorhandler(400)
 def bad_request(ex):

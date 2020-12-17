@@ -10,49 +10,51 @@ AUTH0_DOMAIN = 'coffeeshopbo.us.auth0.com'
 ALGORITHMS = ['RS256']
 API_AUDIENCE = 'drink'
 
-## AuthError Exception
+# AuthError Exception
 '''
 AuthError Exception
 A standardized way to communicate auth failure modes
 '''
+
+
 class AuthError(Exception):
     def __init__(self, error, status_code):
         self.error = error
         self.status_code = status_code
 
 
-## Auth Header
+# Auth Header
 def get_token_auth_header():
-    auth = request.headers.get('Authorization',None)
+    auth = request.headers.get('Authorization', None)
     if not auth:
         print('not Auth')
         raise AuthError({
-            'code':'authorization_header_missing',
+            'code': 'authorization_header_missing',
             'description': 'Auhtorization header is expected'
-        },401)
-        
+        }, 401)
     parts = auth.split()
-    
+
     if parts[0].lower() != 'bearer':
         print('!=bearer')
         raise AuthError({
-            'code':'Invalid_header',
-            'description':'Authorization header must start with "Bearer".'
-        },401)
+            'code': 'Invalid_header',
+            'description': 'Authorization header must start with "Bearer".'
+        }, 401)
     elif len(parts) == 1:
         print('==1')
         raise AuthError({
             'code': 'invalid_header',
             'description': 'Token not found'
-        },401)
+        }, 401)
     elif len(parts) > 2:
         print('>2')
         raise AuthError({
-            'code':'Invalid_header',
+            'code': 'Invalid_header',
             'description': 'It must be a bearer token'
-        },401) 
+        }, 401)
     token = parts[1]
     return token
+
 
 def check_permissions(permission, payload):
     if 'permissions' not in payload:
@@ -63,18 +65,19 @@ def check_permissions(permission, payload):
     if permission not in payload['permissions']:
         raise AuthError({
             'code': 'unauthorized',
-            'description':'Permission not found'
-        },403)
+            'description': 'Permission not found'
+        }, 403)
 
     return True
 
+
 def verify_decode_jwt(token):
     url = 'https://coffeeshopbo.us.auth0.com/.well-known/jwks.json'
-    
-    jsonurl = urlopen(url,timeout=1)
-   
+
+    jsonurl = urlopen(url, timeout=1)
+
     jwks = json.loads(jsonurl.read())
-   
+
     unverified_header = jwt.get_unverified_header(token)
     rsa_key = {}
     if 'kid' not in unverified_header:
@@ -101,7 +104,7 @@ def verify_decode_jwt(token):
                 audience=API_AUDIENCE,
                 issuer='https://' + AUTH0_DOMAIN + '/'
             )
-            
+
             return payload
 
         except jwt.ExpiredSignatureError:
@@ -113,7 +116,8 @@ def verify_decode_jwt(token):
         except jwt.JWTClaimsError:
             raise AuthError({
                 'code': 'invalid_claims',
-                'description': 'Incorrect claims. Please, check the audience and issuer.'
+                'description': '''Incorrect claims. Please, check the
+                audience and issuer.'''
             }, 401)
         except Exception:
             raise AuthError({
@@ -136,7 +140,7 @@ def requires_auth(permission=''):
             except:
                 abort(401)
             check_permissions(permission, payload)
-            
+
             return f(payload, *args, **kwargs)
 
         return wrapper
