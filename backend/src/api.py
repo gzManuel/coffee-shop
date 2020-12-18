@@ -25,10 +25,10 @@ Swagger(app=app)
 @app.route('/drinks')
 def get_drinks():
     """
-    Get all the drinks with short form representations.
+    Get all the drinks with short form representations model.
     ---
     definitions:
-        recipe:
+        recipe_short:
             type: object
             properties:
                 color: 
@@ -38,14 +38,14 @@ def get_drinks():
                     type: integer
                     example: 1
 
-        drinks:
+        drinks_short:
             type: object
             properties:
                 id: 
                     type: integer
                     example: 1
                 recipe: 
-                    $ref: '#definitions/recipe'
+                    $ref: '#definitions/recipe_short'
                 title: 
                     description: Title of the drink
                     type: string
@@ -54,16 +54,16 @@ def get_drinks():
 
     responses:
         200:
-            description: Json response with true value if succeed, and a list of drinks short model
+            description: Json response with true value if succeed, and a list of drinks with short model representation
             schema:
-                id: response
+                id: response get drinks
                 properties:
                     success:
                         type: boolean
                         description: True when succeed
                         default: true
                     drinks:
-                        $ref: '#/definitions/drinks'
+                        $ref: '#/definitions/drinks_short'
                         
     """
     drinks = Drink.query.all()
@@ -77,6 +77,48 @@ def get_drinks():
 @app.route('/drinks-detail')
 @requires_auth('get:drinks-detail')
 def get_drinks_detail(jwt):
+    """
+    Get all drinks with long form representations model.
+    ---
+    definitions:
+        recipe_long:
+            type: object
+            properties:
+                name:
+                    type: string
+                    example: blueberry
+                color: 
+                    type: string
+                    example: blue
+                parts: 
+                    type: integer
+                    example: 1
+        drinks_long:
+            type: object
+            properties:
+                id: 
+                    type: integer
+                    example: 1
+                recipe: 
+                    $ref: '#definitions/recipe_long'
+                title: 
+                    description: Title of the drink
+                    type: string
+                    example: coffe blue
+
+    responses:
+        200:
+            description: Json response with true value if succeed, and a list of drinks with long model representation
+            schema:
+                id: response get drinks-detail
+                properties:
+                    success:
+                        type: boolean
+                        description: True when succeed
+                        default: true
+                    drinks:
+                        $ref: '#/definitions/drinks_long'
+    """
     drinks = Drink.query.all()
 
     # Using list comprehension to get a list of drinks long model
