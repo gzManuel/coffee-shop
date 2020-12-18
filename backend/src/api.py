@@ -28,30 +28,33 @@ def get_drinks():
     Get all the drinks with short form representations.
     ---
     definitions:
+        recipe:
+            type: object
+            properties:
+                color: 
+                    type: string
+                    example: blue
+                parts: 
+                    type: integer
+                    example: 1
+
         drinks:
             type: object
             properties:
                 id: 
                     type: integer
                     example: 1
-                recipe
-                    items:
-                        type: object
-                        properties:
-                            color: 
-                                type: string
-                                example: blue
-                            parts: 
-                                type: integer
-                                example: 1
+                recipe: 
+                    $ref: '#definitions/recipe'
                 title: 
+                    description: Title of the drink
                     type: string
                     example: coffe blue
 
 
     responses:
         200:
-            description: Json response with true value if succeed, and a list of drinks.
+            description: Json response with true value if succeed, and a list of drinks short model
             schema:
                 id: response
                 properties:
@@ -60,8 +63,7 @@ def get_drinks():
                         description: True when succeed
                         default: true
                     drinks:
-                        items:
-                            $ref: '#/definitions/drinks'
+                        $ref: '#/definitions/drinks'
                         
     """
     drinks = Drink.query.all()
