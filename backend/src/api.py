@@ -3,6 +3,7 @@ from flask import Flask, request, jsonify, abort
 from sqlalchemy import exc
 import json
 from flask_cors import CORS
+from flasgger import Swagger
 
 from .database.models import db_drop_and_create_all, setup_db, Drink
 from .auth.auth import AuthError, requires_auth
@@ -10,6 +11,8 @@ from .auth.auth import AuthError, requires_auth
 app = Flask(__name__)
 setup_db(app)
 CORS(app)
+Swagger(app=app)
+
 
 '''
 !! NOTE THIS WILL DROP ALL RECORDS AND START YOUR DB FROM SCRATCH
@@ -21,10 +24,48 @@ CORS(app)
 
 @app.route('/drinks')
 def get_drinks():
+    """
+    Get all the drinks with short form representations.
+    ---
+    definitions:
+        drinks:
+            type: object
+            properties:
+                id: 
+                    type: integer
+                    example: 1
+                recipe
+                    items:
+                        type: object
+                        properties:
+                            color: 
+                                type: string
+                                example: blue
+                            parts: 
+                                type: integer
+                                example: 1
+                title: 
+                    type: string
+                    example: coffe blue
+
+
+    responses:
+        200:
+            description: Json response with true value if succeed, and a list of drinks.
+            schema:
+                id: response
+                properties:
+                    success:
+                        type: boolean
+                        description: True when succeed
+                        default: true
+                    drinks:
+                        items:
+                            $ref: '#/definitions/drinks'
+                        
+    """
     drinks = Drink.query.all()
-    # If there's not drinks, abort(404).
-    if len(drinks) == 0:
-        abort(404)  # Not found.
+    
     # Using list comprehension to get a list of drinks short model
     # representation.
     list_of_drinks = [drink.short() for drink in drinks]
@@ -35,13 +76,10 @@ def get_drinks():
 @requires_auth('get:drinks-detail')
 def get_drinks_detail(jwt):
     drinks = Drink.query.all()
-    # If there's not drinks, abort(404).
-    if len(drinks) == 0:
-        abort(404)  # Not found.
+
     # Using list comprehension to get a list of drinks long model
     # representation.
     list_of_drinks = [drink.long() for drink in drinks]
-
     return jsonify({'success': True, 'drinks': list_of_drinks}), 200
 
 
@@ -57,7 +95,7 @@ def add_drink(jwt):
     try:
         drink = Drink()
         drink.title = title
-        # Formatting recipe, changing ' by " to avoid a bug with json.load().
+        # Formatting recipe, changing ' by " to avoid a bug using json.load().
         drink.recipe = str(recipe).replace("\'", "\"")
         drink.insert()
         return jsonify({"success": True, "drinks": drink.long()}), 200
@@ -84,7 +122,7 @@ def update_drink(jwt, id):
         # If recipe is not None we can change recipe with new recipe.
         if recipe is not None:
             # Formatting recipe, changing ' for " to avoid a bug
-            # with json.load().
+            # using json.load().
             drink.recipe = str(recipe).replace("\'", "\"")
         drink.update()
         return jsonify({"success": True, "drinks": drink.long()}), 200
