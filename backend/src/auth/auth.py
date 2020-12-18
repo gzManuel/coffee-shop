@@ -27,6 +27,7 @@ class AuthError(Exception):
 # Auth Header
 def get_token_auth_header():
     """Check if the bearer web token has the correct format
+        correct format: bearer <token>
 
     Raises:
         AuthError: If there's not the authorization header
@@ -43,18 +44,20 @@ def get_token_auth_header():
             'code': 'authorization_header_missing',
             'description': 'Auhtorization header is expected'
         }, 401)
+    # Divide into list
     parts = auth.split()
-
     if parts[0].lower() != 'bearer':
         raise AuthError({
             'code': 'Invalid_header',
             'description': 'Authorization header must start with "Bearer".'
         }, 401)
+    # If parts just has 1 item raise error
     elif len(parts) == 1:
         raise AuthError({
             'code': 'invalid_header',
             'description': 'Token not found'
         }, 401)
+    # If parts just has more than 2 items raise error
     elif len(parts) > 2:
         raise AuthError({
             'code': 'Invalid_header',
@@ -170,7 +173,7 @@ def requires_auth(permission=''):
     """This is a decorator used with all the apis that need to check the authentification
     and permissions of the api.
 
-    Executes all the functions written above to verify, authentificate jwt, and check 
+    Utilize all the functions written above to verify, authentificate jwt, and check 
     its permissions.
 
     Args:
