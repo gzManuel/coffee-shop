@@ -2,7 +2,7 @@
 
 ## Getting Setup
 
-> _tip_: this frontend is designed to work with [Flask-based Backend](../backend). It is recommended you stand up the backend first, test using Postman, and then the frontend should integrate smoothly.
+> _tip_: this frontend is designed to work with [Flask-based Backend](../backend). 
 
 ### Installing Dependencies
 
